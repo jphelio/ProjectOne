@@ -1,8 +1,7 @@
 language: java
-branches:
- only:
- - master
 
-before_script:
- - chmod +x "./ProjectOneBuilder/build.xml"
+before_install: cd ProjectOneBuilder
+
+before_script: chmod +x build.xml
+
 script: ./ProjectOneBuilder/build.xml
