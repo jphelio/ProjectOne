@@ -3,5 +3,3 @@ language: java
 before_install: cd ProjectOneBuilder
 
 before_script: chmod +x build.xml
-
-script: ./ProjectOneBuilder/build.xml
