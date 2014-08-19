@@ -4,6 +4,6 @@ branches:
  - master
 
 before_script:
- - chmod +x ProjectOneBuilder
+ - chmod +x ./ProjectOneBuilder/build.xml
 
 script: ./ProjectOneBuilder/build.xml
