@@ -10,9 +10,11 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import javax.imageio.ImageIO;
 import projectonebuilder.gui.components.MapTile;
+import projectonebuilder.gui.components.Texture;
 
 /**
  *
@@ -20,10 +22,11 @@ import projectonebuilder.gui.components.MapTile;
  */
 public class ProjectOneBuilder {
 
+    private static final int EMPTY_TILE=-1;
     
     private static int[][] terrainGridInt;
     private static MapTile[][] terrainGrid;
-    private static HashMap<String, Image> terrainTextures;
+    private static ArrayList<Texture> terrainTextures;
     static final File dir = new File("textures");
     
     /**
@@ -36,7 +39,7 @@ public class ProjectOneBuilder {
     
     private static void initialize(){
         
-        terrainTextures=new HashMap<>();
+        terrainTextures=new ArrayList<>();
         
         BufferedImage img = null;
         if(dir.isDirectory()){
@@ -44,7 +47,7 @@ public class ProjectOneBuilder {
 
                 try {
                     img = ImageIO.read(f);
-                    terrainTextures.put(f.getName(), img);
+                    terrainTextures.add(new Texture(f.getName(), img));
                 } catch (final IOException e) {
                     System.out.println("No Textures!!");
                 }
@@ -58,6 +61,7 @@ public class ProjectOneBuilder {
         for(int i=0;i<terrainGrid.length;i++){
             for(int j=0;j<terrainGrid[0].length;j++){
                 terrainGrid[i][j]=new MapTile();
+                terrainGridInt[i][j]=EMPTY_TILE;
             }
         }
     }

@@ -6,23 +6,26 @@
 
 package projectonebuilder;
 
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.function.BiConsumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import jdk.nashorn.internal.objects.NativeArray;
+import javax.swing.filechooser.FileSystemView;
 import projectonebuilder.gui.components.MapPanel;
 import projectonebuilder.gui.components.MapTile;
+import projectonebuilder.gui.components.Texture;
 
 /**
  *
@@ -41,16 +44,22 @@ public class MainPanel extends JFrame{
     private JMenu terrainSelectorMenu;
     private ArrayList<JMenuItem> terrains;
     
-    private HashMap<String, Image> terrainTextures;
+    private int[][] terrainGridInt;
+    
+    private ArrayList<Texture> terrainTextures;
     
     
-    public MainPanel(int[][] terrainGridInt, MapTile[][] terrainGrid, HashMap<String, Image> terrainTextures){
+    public MainPanel(int[][] terrainGridInt, MapTile[][] terrainGrid, ArrayList<Texture> terrainTextures){
         
         this.terrainTextures=terrainTextures;
+        
+        this.terrainGridInt=terrainGridInt;
         
         addMenus();
         
         mapPanel=new MapPanel(terrainGridInt, terrainGrid);
+        mapPanel.setTerrainTextures(terrainTextures);
+        
         this.add(mapPanel);
         this.setSize(360, 400);
         this.setResizable(false);
@@ -75,35 +84,58 @@ public class MainPanel extends JFrame{
         
         mainMenu.add(newFile);
         mainMenu.add(saveFile);
+        saveFile.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser fr = new JFileChooser();
+                FileSystemView fw = fr.getFileSystemView();
+                System.out.println(fw.getDefaultDirectory().getAbsolutePath());
+                File saveDir=new File(fw.getDefaultDirectory().getAbsolutePath()+"/ProjectOne/maps");
+                saveDir.mkdirs();
+                JFileChooser jfc=new JFileChooser(saveDir);
+                int retVal=jfc.showDialog(mapPanel, "Save");
+                if(jfc.getSelectedFile()!=saveDir){
+                        File saveFile=jfc.getSelectedFile();
+                    try {
+                        if(retVal==JFileChooser.APPROVE_OPTION){
+                        Writer w=new FileWriter(saveFile);
+                        System.out.println(terrainGridInt.toString());
+                        w.write(terrainGridInt.length+","+terrainGridInt[0].length+",");
+                        for(int i=0;i<terrainGridInt.length;i++){
+                            for(int j=0;j<terrainGridInt[0].length;j++){
+                                w.write(terrainGridInt[i][j]+"");
+                            }
+                        }
+                        w.close();
+                        }
+                    } catch (IOException ex) {
+                        Logger.getLogger(MainPanel.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+
+                }
+            }
+        }); 
+        
         mainMenu.add(loadFile);
         mainMenu.addSeparator();
         mainMenu.add(exit);
         
         terrainSelectorMenu=new JMenu("Terrain");
         terrains=new ArrayList<>();
-        terrainTextures.forEach(new BiConsumer<String, Image>() {
+        terrainTextures.forEach(item->{
+                Icon icon = new ImageIcon(item.getImg());
+                System.out.println(item.getName());
+                JMenuItem jmi=new JMenuItem(item.getName(), icon);
+                jmi.addActionListener(new ActionListener() {
 
-            @Override
-            public void accept(String t, Image u) {
-                Icon icon = new ImageIcon(u);
-                JMenuItem jmi=new JMenuItem(t, icon);
-                jmi.addMouseListener(new MouseListener() {
                     @Override
-                    public void mouseClicked(MouseEvent e) {}
-                    @Override
-                    public void mousePressed(MouseEvent e) {}
-                    @Override
-                    public void mouseReleased(MouseEvent e) {
-                        mapPanel.setCurrentTerrainTexture(u);
+                    public void actionPerformed(ActionEvent e) {
+                        mapPanel.setCurrentTerrainTexture(item);
                     }
-                    @Override
-                    public void mouseEntered(MouseEvent e) {}
-                    @Override
-                    public void mouseExited(MouseEvent e) {}
                 }); 
                 terrains.add(jmi);
                 
-            }
         });
         
         terrains.forEach(item->terrainSelectorMenu.add(item));
@@ -112,6 +144,10 @@ public class MainPanel extends JFrame{
         menuBar.add(terrainSelectorMenu);
         
         this.setJMenuBar(menuBar);
+    }
+
+    public ArrayList<JMenuItem> getTerrains() {
+        return terrains;
     }
     
 }
